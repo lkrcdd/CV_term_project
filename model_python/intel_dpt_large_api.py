@@ -3,6 +3,7 @@ import torch
 import cv2
 import PIL
 from transformers import pipeline
+#dd
 
 #image = cv2.imread("images/test_coffee.jpeg")
 # print(f'image type : {type(image)}')  #
