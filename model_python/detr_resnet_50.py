@@ -5,8 +5,8 @@ from PIL import Image, ImageDraw
 import requests
 
 # 이미지 가져오기
-url = "http://images.cocodataset.org/val2017/000000039769.jpg"
-image = Image.open(requests.get(url, stream=True).raw)
+url = "images/test_coffee.jpeg"
+image = Image.open(url)
 
 # 미리 학습된 모델 가져오기
 processor = DetrImageProcessor.from_pretrained("facebook/detr-resnet-50", revision="no_timm")

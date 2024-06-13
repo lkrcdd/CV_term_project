@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:camera/camera.dart';
+import 'dart:math' as math;
 //import 'package:flutter_camera_ml_vision/flutter_camera_ml_vision.dart';
 
 //my wifi address 192.168.35.165
@@ -127,6 +128,41 @@ class ResultPage extends StatelessWidget {
     return null;
   }
 
+  Future<Uint8List?> detect() async {
+    //set url and header
+    Uri url = Uri.parse('$uri/detection');
+    var header = {'Content-Type': 'application/json'};
+
+    //set image data to body as base64
+    if (takedPhoto == null) {
+      debugPrint('!!! taken photo null');
+      return null;
+    }
+    Uint8List imageBytes = await takedPhoto!.readAsBytes();
+    String base64Image = base64Encode(imageBytes);
+    var body = jsonEncode({"image": base64Image});
+
+    try {
+      http.Response response = await http.post(
+        url,
+        headers: header,
+        body: body,
+      );
+      debugPrint('!!! Response status: ${response.statusCode}');
+      debugPrint('!!! Response body: ${response.body}');
+
+      final data = jsonDecode(response.body);
+      if (data['result_image'] == null) {
+        debugPrint('!!! result image null');
+        return null;
+      }
+      return base64Decode(data['result_image']);
+    } catch (e) {
+      debugPrint('!!! err $e');
+    }
+    return null;
+  }
+
   Future<Uint8List?> checkPhoto() async {
     return await takedPhoto?.readAsBytes();
   }
@@ -138,7 +174,7 @@ class ResultPage extends StatelessWidget {
       body: Center(
         child: FutureBuilder(
           //future: checkPhoto(),
-          future: upload(),
+          future: detect(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const CircularProgressIndicator();
@@ -146,7 +182,11 @@ class ResultPage extends StatelessWidget {
               return const Text('err');
             }
             Uint8List image = snapshot.data!;
-            return Image.memory(image);
+            return Transform.rotate(
+              angle: 90 * (math.pi / 180),
+              child: Image.memory(image),
+            );
+            //return Image.memory(image);
           },
         ),
       ),

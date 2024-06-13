@@ -83,6 +83,7 @@ results = processor.post_process_object_detection(outputs, target_sizes=target_s
 
 draw = ImageDraw.Draw(image)
 -> drawable 이미지 객체 생성.
+-> 딥러닝 모델의 output은 detection info 이므로 원본 그림 위에 그리는 것.
 
 box = [round(i, 2) for i in box.tolist()]
 -> round(i, 2) : 각 요소 i를 소수점 두 자리까지 반올림합니다.
