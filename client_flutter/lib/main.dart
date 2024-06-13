@@ -124,10 +124,7 @@ class ResultPage extends StatelessWidget {
     } catch (e) {
       debugPrint('!!! err $e');
     }
-
-    // var response = await http.get(url, headers: header);
-    // print('Response status: ${response.statusCode}');
-    // print('Response body: ${response.body}');
+    return null;
   }
 
   Future<Uint8List?> checkPhoto() async {
