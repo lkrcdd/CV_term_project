@@ -1,8 +1,5 @@
 # CV_TERM_PROJECT
 
-1. 주제
-asfdfasfd
-
 ### flutter -> flask -> ml model -> flutter flow
 송수신 데이터 형식은 base64.
 ->  각 end point마다 처리하는 방식이 있어야 함. 플러터의 경우는 이미 익혔다(창설프로젝트 참조)
@@ -54,6 +51,51 @@ return flask.jsonify({'result_image': result_image_base64}), 200
 pipe = pipeline(task="depth-estimation", model="Intel/dpt-large")
 result = pipe(image)
 result_image = result["depth"]
+
+### detr_resnet_50
+- processor와 model
+processor: model이 객체 감지를 원활히 하도록 전처리, 감지 후 모델이 출력한 결과를 처리 가능하도록 후처리.
+DetrForObjectDetection: 모델 자체
+
+inputs = processor(images=image, return_tensors="pt")
+-> image를 전처리 후 pytorch tensor 타입으로 출력
+
+outputs = model(**inputs)
+-> python unpacking, key-value 쌍을 함수의 인자로 전달. processor로 처리된 inputs가 {'tensor_key' : pytorch tensor}의 형태인듯?
+
+target_sizes = torch.tensor([image.size[::-1]])
+-> python slicing. start index : all, end index : all, step : -1
+-> 슬라이싱 결과는 전체 인덱스에 대해 거꾸로 1스텝씩 = (width, height) -> (height, width)
+* 왜?
+이미지 좌표계와 텐서 좌표계의 차이
+    이미지 파일의 size 속성은 일반적으로 (width, height) 형식입니다.
+    하지만 많은 딥러닝 프레임워크나 이미지 처리 라이브러리에서는 이미지를 텐서로 변환할 때 (height, width) 형식을 사용합니다. 이는 numpy 배열이나 PyTorch 텐서가 (channels, height, width) 순서를 따르기 때문입니다.
+Bounding Box 및 기타 좌표 계산을 위해
+    객체 탐지 모델은 이미지 내의 객체 위치를 예측할 때 bounding box 좌표를 사용합니다. 이 좌표는 (left, top, right, bottom) 또는 (x_min, y_min, x_max, y_max)와 같은 형식을 가집니다.
+    모델이 예측한 좌표를 실제 이미지 크기와 매칭시키기 위해서는 올바른 height와 width 값이 필요합니다
+
+results = processor.post_process_object_detection(outputs, target_sizes=target_sizes, threshold=0.9)[0]
+-> model의 output 후처리.
+-> threshold = 신뢰도. 이 값 이상일 때만 탐지된 객체를 유효한 것으로 간주하여 최종 결과에 포함시킴.
+-> [0] = 0번째 인덱스 결과만 가져옴. post_process_object_detection 메서드는 여러 이미지의 후처리가 가능해서.
+-> 후처리된 결과는 다음과 같이 결과 가져올 수 있는듯 results["scores"], results["labels"], results["boxes"]
+
+
+draw = ImageDraw.Draw(image)
+-> drawable 이미지 객체 생성.
+
+box = [round(i, 2) for i in box.tolist()]
+-> round(i, 2) : 각 요소 i를 소수점 두 자리까지 반올림합니다.
+-> box.tolist() : PyTorch 텐서 box를 리스트로 변환. 앞으로 box는 리스트가 된다.
+
+model.config.id2label[label.item()]
+-> 해당 model 객체 내의 config 객체 내의 딕셔너리 객체인 id2label에 접근한다.
+-> [label.item()] : results["labels"] 텐서에서 값을 뽑아 id2label 딕셔너리의 키 값으로 사용.
+
+* .item() : 텐서로부터 값을 뽑는다
+
+draw.text((box[0], box[1]), f"{label_str} {score.item():.3f}", fill="white")
+-> text가 시작할 x, y 좌표
 
 ### flutter
 package:camera/camera.dart;

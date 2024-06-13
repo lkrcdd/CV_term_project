@@ -94,7 +94,7 @@ class ResultPage extends StatelessWidget {
 
   Future<Uint8List?> upload() async {
     //set url and header
-    Uri url = Uri.parse(uri);
+    Uri url = Uri.parse('$uri/depth');
     var header = {'Content-Type': 'application/json'};
 
     //set image data to body as base64

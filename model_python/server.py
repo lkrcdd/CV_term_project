@@ -9,19 +9,6 @@ import PIL
 from transformers import pipeline
 import flask_cors
 
-# image = 'images/test_coffee.jpeg'
-# pipe = pipeline(task="depth-estimation", model="Intel/dpt-large")
-# result = pipe(image)
-# result_image = result["depth"]
-# result_image.show()
-
-# #image saving directory
-# IMAGES = 'images'
-# if not os.path.exists(IMAGES):
-#     os.makedirs(IMAGES)
-
-# server.config['IMAGES'] = IMAGES
-
 server = flask.Flask(__name__)
 # CORS 설정
 flask_cors.CORS(server, resources={r"/*": {"origins": "*"}})
@@ -30,7 +17,7 @@ flask_cors.CORS(server, resources={r"/*": {"origins": "*"}})
 # def hello_world():
 #     return flask.jsonify({'result': 'hello_world'}), 200
 
-@server.route("/", methods=["POST"])
+@server.route("/depth", methods=["POST"])
 def process_image():
     data = flask.request.get_json()
     if 'image' not in data:
