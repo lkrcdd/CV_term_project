@@ -43,6 +43,11 @@ class CameraPage extends StatefulWidget {
 
 class _CameraPageState extends State<CameraPage> {
   late CameraController _cameraController;
+  int _bottomIndex = 0;
+
+  void tapBottom(int index) {
+    setState(() => _bottomIndex = index);
+  }
 
   @override
   void initState() {
@@ -77,23 +82,47 @@ class _CameraPageState extends State<CameraPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           takedPhoto = await _cameraController.takePicture();
-          Navigator.push(context, MaterialPageRoute(
-            builder: (context) {
-              return ResultPage();
-            },
-          ));
+          if (_bottomIndex == 0) {
+            Navigator.push(context, MaterialPageRoute(
+              builder: (context) {
+                return DepthPage();
+              },
+            ));
+          } else if (_bottomIndex == 1) {
+            Navigator.push(context, MaterialPageRoute(
+              builder: (context) {
+                return DetectionPage();
+              },
+            ));
+          } else {
+            return;
+          }
         },
         child: const Icon(Icons.camera),
       ),
-      //bottomNavigationBar: BottomNavigationBar(items: []),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.camera_enhance),
+            label: 'depth estimation',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.camera_alt),
+            label: 'object detection',
+          ),
+        ],
+        currentIndex: _bottomIndex,
+        selectedItemColor: Colors.blue,
+        onTap: tapBottom,
+      ),
     );
   }
 }
 
-class ResultPage extends StatelessWidget {
-  const ResultPage({super.key});
+class DepthPage extends StatelessWidget {
+  const DepthPage({super.key});
 
-  Future<Uint8List?> upload() async {
+  Future<Uint8List?> estimate() async {
     //set url and header
     Uri url = Uri.parse('$uri/depth');
     var header = {'Content-Type': 'application/json'};
@@ -127,6 +156,31 @@ class ResultPage extends StatelessWidget {
     }
     return null;
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('depth estimation')),
+      body: Center(
+        child: FutureBuilder(
+          future: estimate(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const CircularProgressIndicator();
+            } else if (snapshot.hasError || snapshot.data == null) {
+              return const Text('err');
+            }
+            Uint8List image = snapshot.data!;
+            return Image.memory(image);
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class DetectionPage extends StatelessWidget {
+  const DetectionPage({super.key});
 
   Future<Uint8List?> detect() async {
     //set url and header
@@ -163,17 +217,12 @@ class ResultPage extends StatelessWidget {
     return null;
   }
 
-  Future<Uint8List?> checkPhoto() async {
-    return await takedPhoto?.readAsBytes();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('depth estimation')),
+      appBar: AppBar(title: const Text('object detection')),
       body: Center(
         child: FutureBuilder(
-          //future: checkPhoto(),
           future: detect(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
@@ -186,7 +235,6 @@ class ResultPage extends StatelessWidget {
               angle: 90 * (math.pi / 180),
               child: Image.memory(image),
             );
-            //return Image.memory(image);
           },
         ),
       ),
