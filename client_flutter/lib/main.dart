@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -94,6 +95,12 @@ class _CameraPageState extends State<CameraPage> {
                 return DetectionPage();
               },
             ));
+          } else if (_bottomIndex == 2) {
+            Navigator.push(context, MaterialPageRoute(
+              builder: (context) {
+                return TextPage();
+              },
+            ));
           } else {
             return;
           }
@@ -109,6 +116,10 @@ class _CameraPageState extends State<CameraPage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.camera_alt),
             label: 'object detection',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.text_fields),
+            label: 'recognize text',
           ),
         ],
         currentIndex: _bottomIndex,
@@ -234,6 +245,75 @@ class DetectionPage extends StatelessWidget {
             return Transform.rotate(
               angle: 90 * (math.pi / 180),
               child: Image.memory(image),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class TextPage extends StatelessWidget {
+  const TextPage({super.key});
+
+  Future<String?> recognize() async {
+    //set url and header
+    Uri url = Uri.parse('$uri/text');
+    var header = {'Content-Type': 'application/json'};
+
+    //set image data to body as base64
+    if (takedPhoto == null) {
+      debugPrint('!!! taken photo null');
+      return null;
+    }
+    Uint8List imageBytes = await takedPhoto!.readAsBytes();
+    String base64Image = base64Encode(imageBytes);
+    var body = jsonEncode({"image": base64Image});
+
+    try {
+      http.Response response = await http.post(
+        url,
+        headers: header,
+        body: body,
+      );
+      debugPrint('!!! Response status: ${response.statusCode}');
+      debugPrint('!!! Response body: ${response.body}');
+
+      final data = jsonDecode(response.body);
+      if (data['result_text'] == null) {
+        debugPrint('!!! result text null');
+        return null;
+      }
+      return data['result_text'];
+    } catch (e) {
+      debugPrint('!!! err $e');
+    }
+    return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('recognize text')),
+      body: Center(
+        child: FutureBuilder(
+          future: recognize(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const CircularProgressIndicator();
+            } else if (snapshot.hasError || snapshot.data == null) {
+              return const Text('err');
+            }
+            String text = snapshot.data!;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Image.file(File(takedPhoto!.path)),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(text),
+                ),
+              ],
             );
           },
         ),
