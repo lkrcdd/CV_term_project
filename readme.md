@@ -98,6 +98,10 @@ model.config.id2label[label.item()]
 draw.text((box[0], box[1]), f"{label_str} {score.item():.3f}", fill="white")
 -> text가 시작할 x, y 좌표
 
+### text recognization
+https://huggingface.co/microsoft/trocr-base-handwritten
+
+
 ### flutter
 package:camera/camera.dart;
 -> 기본적인 카메라 임베딩 패키지

@@ -42,6 +42,6 @@ def recognize_text(image):
     pixels = processor(images=image, return_tensors="pt").pixel_values
 
     generated_ids = model.generate(pixels)
-    generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
-
-    return(generated_text)
+    generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)
+    print(generated_text)
+    return(generated_text[0])

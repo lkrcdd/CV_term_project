@@ -2,7 +2,7 @@ from transformers import TrOCRProcessor, VisionEncoderDecoderModel
 from PIL import Image
 import requests
 
-url = "images/test_london.jpg"
+url = "images/test_ipad.jpeg"
 image = Image.open(url).convert("RGB")
 
 processor = TrOCRProcessor.from_pretrained('microsoft/trocr-base-handwritten')
