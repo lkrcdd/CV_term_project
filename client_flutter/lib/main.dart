@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:camera/camera.dart';
 import 'dart:math' as math;
@@ -269,6 +270,12 @@ class TextPage extends StatelessWidget {
     Uint8List imageBytes = await takedPhoto!.readAsBytes();
     String base64Image = base64Encode(imageBytes);
     var body = jsonEncode({"image": base64Image});
+
+    // final ByteData bytes =
+    //     await rootBundle.load('assets/images/test_london.jpg');
+    // final List<int> list = bytes.buffer.asUint8List();
+    // final String base64Image = base64Encode(list);
+    // var body = jsonEncode({"image": base64Image});
 
     try {
       http.Response response = await http.post(

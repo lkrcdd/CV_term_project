@@ -92,7 +92,7 @@ def processing_text():
         return flask.jsonify({'error': f'base64 디코딩 에러: {str(e)}'}), 400
 
     try:
-        image = PIL.Image.open(io.BytesIO(image_data))
+        image = PIL.Image.open(io.BytesIO(image_data)).convert("RGB")
     except Exception as e:
         return flask.jsonify({'error': f'이미지 로드 에러: {str(e)}'}), 400
 
